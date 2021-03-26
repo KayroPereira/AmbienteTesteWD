@@ -1,5 +1,7 @@
 import * as security from './security.js';
 
+//let security = require.resolve(request);
+
 let projectID = security.projectID;
 let apiKey = security.apiKey;
  
@@ -19,6 +21,10 @@ var config = {
 };
 
 let btn1 = document.getElementById("btn_1");
+let btn2 = document.getElementById("btn_2");
+let btn3 = document.getElementById("btn_3");
+let btn4 = document.getElementById("btn_4");
+let btn5 = document.getElementById("btn_5");
 
 let send1 = document.getElementById("in_1");
 
@@ -36,6 +42,10 @@ firebase.initializeApp(config);
 
 function updateLabel(lbl, value){
   lbl.innerText = value;
+}
+
+function random(inf, top){
+	return inf + Math.floor(Math.random()*top);
 }
 
 function formatBtn(btn, value){
@@ -66,10 +76,6 @@ firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).get().then(function(snaps
 }).catch(function(error) {
   console.error(error);
 });
-
-function random(inf, top){
-  return inf + Math.floor(Math.random()*top);
-}
 
 //Download do PATH_SHARE_NUMBER ao carregar a página
 firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER).get().then(function(snapshot) {
@@ -104,8 +110,25 @@ refreshLabel.on('value', (snapshot) => {
 //   updateLabel(lbl2, "Value " + data);
 // });
 
-function setData(btn) {
 
+btn1.onclick = function() {
+	setData('btn_1');
+};
+btn2.onclick = function() {
+	setData('btn_2');
+};
+btn3.onclick = function() {
+	setData('btn_3');
+};
+btn4.onclick = function() {
+	setData('btn_4');
+};
+btn5.onclick = function() {
+	setData('btn_5');
+};
+
+ function setData(btn) {
+	 
     if(btn === 'btn_1'){
       dataFlg == 0 ? dataFlg = 1 : dataFlg = 0;
       firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
@@ -114,7 +137,6 @@ function setData(btn) {
     }else if(btn === 'btn_3'){
 
       for(let i = 0; i < PATH_NUMBER.length; i++){
-        console.log(MAC_ADDRESS + PATH_SHARE_NUMBER + "/" + PATH_NUMBER[i]);
         firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER + "/" + PATH_NUMBER[i]).set(random(VALUE_MIN_FIREBASE, VALUE_MAX_FIREBASE));
       }
       dataFlg = 1;

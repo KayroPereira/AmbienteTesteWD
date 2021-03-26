@@ -27,7 +27,7 @@ body{
   width: 250px;
 }
 
-#btn_2{
+#btn_2, #btn_4, #btn_5{
   display: flex;
   margin: 0px;
   width: 50px;
