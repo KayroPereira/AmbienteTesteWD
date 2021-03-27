@@ -1,7 +1,5 @@
 import * as security from './security.js';
 
-//let security = require.resolve(request);
-
 let projectID = security.projectID;
 let apiKey = security.apiKey;
  
@@ -10,8 +8,10 @@ const PATH_SHARE_FLAG = security.PATH_SHARE_FLAG;
 const PATH_SHARE_NUMBER = security.PATH_SHARE_NUMBER;
 const VALUE_MIN_FIREBASE = security.VALUE_MIN_FIREBASE;
 const VALUE_MAX_FIREBASE = security.VALUE_MAX_FIREBASE;
+const PATH_SHARE_TEXT = security.PATH_SHARE_TEXT;
  
 const PATH_NUMBER = security.PATH_NUMBER;
+const PATH_TEXT = security.PATH_TEXT;
 
 var config = {
 		 apiKey: apiKey,
@@ -26,7 +26,9 @@ let btn3 = document.getElementById("btn_3");
 let btn4 = document.getElementById("btn_4");
 let btn5 = document.getElementById("btn_5");
 
-let send1 = document.getElementById("in_1");
+let in1 = document.getElementById("in_1");
+let in2 = document.getElementById("in_2");
+let in3 = document.getElementById("in_3");
 
 let lbl1 = document.getElementById("lbl_1");
 let lbl2 = document.getElementById("lbl_2");
@@ -60,56 +62,64 @@ function formatBtn(btn, value){
   }
 }
 
-//Download do PATH_SHARE_FLAG ao carregar a página
-firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).get().then(function(snapshot) {
-  
-  if (snapshot.exists()) {
-    let valueBtn = snapshot.val();
+//Requisita atualização ao carregar a página
+getFirebase(MAC_ADDRESS + PATH_SHARE_FLAG, 1);
+getFirebase(MAC_ADDRESS + PATH_SHARE_NUMBER, 2);
 
-    dataFlg = valueBtn;
-    formatBtn(btn1, valueBtn);
-    updateLabel(lbl1, "Value " + valueBtn);
-  }
-  else {
-    console.log("No data available");
-  }
-}).catch(function(error) {
-  console.error(error);
-});
+//Atualiza componentes HTML
+function updateComponents(valores, modo){
 
-//Download do PATH_SHARE_NUMBER ao carregar a página
-firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER).get().then(function(snapshot) {
+	switch(modo){
+		case 1:
+			formatBtn(btn1, valores);
+		
+			updateLabel(lbl1, "Value " + valores);
+			updateLabel(lbl2, "Value " + valores);
+			break;
+			
+		case 2:
+			for(let i = 0; i < valores.length; i++)
+				updateLabel(lbl_number[i], PATH_NUMBER[i] + ": " + valores[i]);
+			break;
+	}
+}
 
-  let i = 0;
-  snapshot.forEach(function(childSnapshot) {
-    updateLabel(lbl_number[i++], childSnapshot.key + ": " + childSnapshot.val());
-  });
-}).catch(function(error) {
-  console.error(error);
-});
+//Download do FIREBASE ao carregar a página
+function getFirebase(PATH, modo){
+	
+	firebase.database().ref(PATH).get().then(function(snapshot) {
+	
+		let lengthPath = snapshot.numChildren();
+		let valores;
+		
+		if (snapshot.exists()) {
+			if(lengthPath == 0){
+				
+				valores = [snapshot.val()];
+			}else{
+				valores = Object.values(snapshot.val());
+			}
+		}else{
+			console.log("No data available");
+			return -1;
+		}
+		updateComponents(valores, modo);
+		
+	}).catch(function(error) {
+	  console.error(error);
+	  return -1;
+	});	
+}
 
 let refreshLabel = firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG);
-
-refreshLabel.on('value', (snapshot) => {
-  const data = snapshot.val();
-  
-  formatBtn(btn1, data);
-
-  updateLabel(lbl1, "Value " + data);
-  updateLabel(lbl2, "Value " + data);
+refreshLabel.on('value', () => {
+	getFirebase(MAC_ADDRESS + PATH_SHARE_FLAG, 1);
 });
 
-// let refreshLabel = firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER);
-
-// refreshLabel.on('value', (snapshot) => {
-//   const data = snapshot.val();
-  
-//   formatBtn(btn1, data);
-
-//   updateLabel(lbl1, "Value " + data);
-//   updateLabel(lbl2, "Value " + data);
-// });
-
+let refreshLabel_2 = firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER);
+refreshLabel_2.on('value', () => {
+	getFirebase(MAC_ADDRESS + PATH_SHARE_NUMBER, 2);
+});
 
 btn1.onclick = function() {
 	setData('btn_1');
@@ -127,13 +137,14 @@ btn5.onclick = function() {
 	setData('btn_5');
 };
 
+//Carrega dados no FIREBASE
  function setData(btn) {
 	 
     if(btn === 'btn_1'){
       dataFlg == 0 ? dataFlg = 1 : dataFlg = 0;
       firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
     }else if(btn === 'btn_2'){
-      firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(send1.value);
+      firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(in1.value);
     }else if(btn === 'btn_3'){
 
       for(let i = 0; i < PATH_NUMBER.length; i++){
@@ -141,6 +152,15 @@ btn5.onclick = function() {
       }
       dataFlg = 1;
       firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
+    }else if(btn === 'btn_4' || btn === 'btn_5'){
+    	
+    	let i = btn === 'btn_4' ? 0 : 1;
+    	let value = btn === 'btn_4' ? in2.value : in3.value; 
+    	
+    	console.log(MAC_ADDRESS + PATH_SHARE_TEXT + "/" + PATH_TEXT[i]);
+    	
+    	firebase.database().ref(MAC_ADDRESS + PATH_SHARE_TEXT + "/" + PATH_TEXT[i]) .set(value);
+    	firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
     }
 }
 
