@@ -35,6 +35,8 @@ let lbl2 = document.getElementById("lbl_2");
 let lbl3 = document.getElementById("lbl_3");
 let lbl4 = document.getElementById("lbl_4");
 let lbl5 = document.getElementById("lbl_5");
+let lbl6 = document.getElementById("lbl_6");
+let lbl7 = document.getElementById("lbl_7");
 
 let lbl_number = [lbl3, lbl4, lbl5];
 
@@ -62,11 +64,12 @@ function formatBtn(btn, value){
   }
 }
 
-//Requisita atualização ao carregar a página
+// Requisita atualização ao carregar a página
 getFirebase(MAC_ADDRESS + PATH_SHARE_FLAG, 1);
 getFirebase(MAC_ADDRESS + PATH_SHARE_NUMBER, 2);
+getFirebase(MAC_ADDRESS + PATH_SHARE_TEXT, 3);
 
-//Atualiza componentes HTML
+// Atualiza componentes HTML
 function updateComponents(valores, modo){
 
 	switch(modo){
@@ -81,10 +84,15 @@ function updateComponents(valores, modo){
 			for(let i = 0; i < valores.length; i++)
 				updateLabel(lbl_number[i], PATH_NUMBER[i] + ": " + valores[i]);
 			break;
+			
+		case 3:
+			updateLabel(lbl6,  valores[0]);
+			updateLabel(lbl7,  valores[1]);
+			break;
 	}
 }
 
-//Download do FIREBASE ao carregar a página
+// Download do FIREBASE ao carregar a página
 function getFirebase(PATH, modo){
 	
 	firebase.database().ref(PATH).get().then(function(snapshot) {
@@ -94,7 +102,6 @@ function getFirebase(PATH, modo){
 		
 		if (snapshot.exists()) {
 			if(lengthPath == 0){
-				
 				valores = [snapshot.val()];
 			}else{
 				valores = Object.values(snapshot.val());
@@ -121,34 +128,43 @@ refreshLabel_2.on('value', () => {
 	getFirebase(MAC_ADDRESS + PATH_SHARE_NUMBER, 2);
 });
 
+let refreshLabel_3 = firebase.database().ref(MAC_ADDRESS + PATH_SHARE_TEXT);
+refreshLabel_3.on('value', () => {
+	getFirebase(MAC_ADDRESS + PATH_SHARE_TEXT, 3);
+});
+
 btn1.onclick = function() {
 	setData('btn_1');
 };
 btn2.onclick = function() {
 	setData('btn_2');
+	in1.select();
 };
 btn3.onclick = function() {
 	setData('btn_3');
 };
 btn4.onclick = function() {
 	setData('btn_4');
+	in2.value = "";
 };
 btn5.onclick = function() {
 	setData('btn_5');
+	in3.value = "";
 };
 
-//Carrega dados no FIREBASE
+// Carrega dados no FIREBASE
  function setData(btn) {
 	 
     if(btn === 'btn_1'){
-      dataFlg == 0 ? dataFlg = 1 : dataFlg = 0;
-      firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
+    	dataFlg == 0 ? dataFlg = 1 : dataFlg = 0;
+    	firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
     }else if(btn === 'btn_2'){
-      firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(in1.value);
+    	dataFlg = 1;
+    	firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(in1.value);
     }else if(btn === 'btn_3'){
 
       for(let i = 0; i < PATH_NUMBER.length; i++){
-        firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER + "/" + PATH_NUMBER[i]).set(random(VALUE_MIN_FIREBASE, VALUE_MAX_FIREBASE));
+    	  firebase.database().ref(MAC_ADDRESS + PATH_SHARE_NUMBER + "/" + PATH_NUMBER[i]).set(random(VALUE_MIN_FIREBASE, VALUE_MAX_FIREBASE));
       }
       dataFlg = 1;
       firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
@@ -157,8 +173,7 @@ btn5.onclick = function() {
     	let i = btn === 'btn_4' ? 0 : 1;
     	let value = btn === 'btn_4' ? in2.value : in3.value; 
     	
-    	console.log(MAC_ADDRESS + PATH_SHARE_TEXT + "/" + PATH_TEXT[i]);
-    	
+    	dataFlg = 1;
     	firebase.database().ref(MAC_ADDRESS + PATH_SHARE_TEXT + "/" + PATH_TEXT[i]) .set(value);
     	firebase.database().ref(MAC_ADDRESS + PATH_SHARE_FLAG).set(dataFlg);
     }
